@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis XV - Angélica</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --celeste:#bfe6ff;
+      --dorado:#f7d37b;
+      --card: rgba(255,255,255,.10);
+      --borde: rgba(255,255,255,.22);
+      --txt: rgba(255,255,255,.92);
+      --bg1:#2a6aa1;
+      --bg2:#132a3a;
+      --bg3:#0b1018;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Poppins', sans-serif;
+      color:var(--txt);
+      background: radial-gradient(1200px 800px at 50% 10%, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
+      overflow:hidden; /* modo video */
+      min-height:100vh;
+    }
+    canvas{position:fixed; inset:0; z-index:-3;}
+    .glow{
+      position:fixed; inset:-20%;
+      background:
+        radial-gradient(circle at 25% 20%, rgba(191,230,255,.25), transparent 40%),
+        radial-gradient(circle at 75% 30%, rgba(247,211,123,.15), transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(191,230,255,.12), transparent 55%);
+      filter: blur(10px);
+      z-index:-2;
+      pointer-events:none;
+    }
+
+    /* --- Video Scenes --- */
+    .scene{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:26px 18px;
+      opacity:0;
+      transform: translateY(18px) scale(.99);
+      pointer-events:none;
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .scene.active{
+      opacity:1;
+      transform: translateY(0) scale(1);
+      pointer-events:auto;
+    }
+
+    .card{
+      width:min(560px, 100%);
+      border-radius:26px;
+      border:1px solid var(--borde);
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      backdrop-filter: blur(14px);
+      box-shadow: 0 22px 70px rgba(0,0,0,.45);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .top{
+      padding:22px 18px 14px;
+      text-align:center;
+    }
+    .cinta{
+      display:inline-block;
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid rgba(247,211,123,.35);
+      background: rgba(247,211,123,.12);
+      color:#ffe8b5;
+      letter-spacing:.8px;
+      font-size:12px;
+      text-transform:uppercase;
+    }
+    .titulo{
+      font-family:'Great Vibes', cursive;
+      font-size:64px;
+      margin:10px 0 0;
+      color:var(--celeste);
+      text-shadow: 0 0 18px rgba(191,230,255,.25);
+      line-height:1;
+    }
+    .sub{margin:8px 0 0; font-weight:300; opacity:.93}
+    .nombre{margin:10px 0 0; font-size:28px; font-weight:700; color:#fff}
+    .quince{margin:6px 0 0; opacity:.95}
+    .divider{
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+      margin:16px 0 0;
+    }
+
+    .content{padding:14px 18px 18px}
+    .box{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.18);
+      padding:14px 14px;
+      margin-top:12px;
+    }
+    .label{
+      font-size:12px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      opacity:.85;
+      margin-bottom:6px;
+    }
+    .texto{font-size:14px; line-height:1.5; margin:0}
+    .resaltado{color:var(--celeste); font-weight:700}
+
+    .btnrow{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    button, a.btn{
+      border:none;
+      padding:12px 14px;
+      border-radius:16px;
+      cursor:pointer;
+      font-size:15px;
+      font-weight:700;
+      transition: transform .15s ease, opacity .15s ease;
+      text-decoration:none;
+      text-align:center;
+      display:inline-block;
+      min-width: 190px;
+    }
+    button:active, a.btn:active{transform:scale(.98)}
+    .btn-next{background: rgba(191,230,255,.18); border:1px solid rgba(191,230,255,.35); color:#e9f7ff;}
+    .btn-back{background: rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.18); color:#fff;}
+    .btn-map{background: rgba(191,230,255,.16); border:1px solid rgba(191,230,255,.30); color:#e9f7ff;}
+    .btn-wsp{background: rgba(0,255,138,.14); border:1px solid rgba(0,255,138,.28); color:#dbffe9;}
+    .btn-yape{background: rgba(247,211,123,.14); border:1px solid rgba(247,211,123,.35); color:#fff2cf;}
+    .btn-music{background: rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.18); color:#fff;}
+
+    .small{font-size:12px; opacity:.82; margin-top:10px; text-align:center}
+
+    /* --- Progress --- */
+    .progress{
+      display:flex; gap:8px;
+      padding:14px 18px 16px;
+      justify-content:center;
+      align-items:center;
+    }
+    .dot{
+      width:10px; height:10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.12);
+      transition: .25s;
+    }
+    .dot.on{background: rgba(191,230,255,.55); border-color: rgba(191,230,255,.75); box-shadow: 0 0 12px rgba(191,230,255,.25);}
+
+    /* --- Toast --- */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      background: rgba(0,0,0,.75);
+      border:1px solid rgba(255,255,255,.16);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:999px;
+      font-size:13px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index:50;
+    }
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+
+    /* --- Carruaje SVG --- */
+    .coach{
+      position:absolute;
+      left:-40%;
+      bottom:10px;
+      width:min(420px, 78vw);
+      opacity:.95;
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,.45));
+      animation: coachMove 3.8s ease-out forwards;
+    }
+    @keyframes coachMove{
+      0%{transform:translateX(-10%) scale(.98); opacity:0}
+      12%{opacity:1}
+      100%{transform:translateX(160%) scale(1); opacity:0}
+    }
+
+    /* --- Form --- */
+    .form{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+    input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.25);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+    }
+    input::placeholder{color: rgba(255,255,255,.65)}
+
+    /* responsive */
+    @media (max-width:360px){
+      .titulo{font-size:56px}
+      button, a.btn{min-width: 100%}
+    }
+  </style>
+</head>
+
+<body>
+<canvas id="stars"></canvas>
+<div class="glow"></div>
+
+<!-- ESCENA 1 -->
+<section class="scene active" data-scene="0">
+  <div class="card">
+    <!-- Carruaje pasando al abrir -->
+    <div class="coach" aria-hidden="true">
+      <!-- SVG simple estilo carruaje (dorado) -->
+      <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffe2a6"/>
+            <stop offset="1" stop-color="#d8a84f"/>
+          </linearGradient>
+        </defs>
+        <!-- caballos (silhouette simple) -->
+        <path d="M110 210c25-50 60-65 90-62 18 2 26 12 38 18 20 10 48-2 58-18 8-12 5-28-10-32-17-4-22 14-22 14s-9-18 10-30c18-12 46-4 58 10 18 22 16 60-8 84-26 26-62 28-88 18-16-6-32-18-48-18-22 0-45 18-58 34z"
+              fill="url(#gold)" opacity=".9"/>
+        <!-- cuerpo carruaje -->
+        <path d="M330 120c40-45 110-65 190-60 92 6 156 52 176 108 10 28 6 54-6 74H320c-18-22-22-64 10-122z"
+              fill="url(#gold)"/>
+        <!-- ventana -->
+        <path d="M440 105c22-22 72-30 118-24 46 6 82 26 96 52 6 12 8 26 4 40H420c-8-20-4-44 20-68z"
+              fill="rgba(15,32,39,.35)" stroke="rgba(255,255,255,.25)" stroke-width="4"/>
+        <!-- techo -->
+        <path d="M365 120c28-48 100-82 190-80 98 2 168 44 190 98"
+              fill="none" stroke="rgba(255,255,255,.30)" stroke-width="10" stroke-linecap="round"/>
+        <!-- ruedas -->
+        <circle cx="420" cy="245" r="38" fill="none" stroke="url(#gold)" stroke-width="10"/>
+        <circle cx="630" cy="245" r="38" fill="none" stroke="url(#gold)" stroke-width="10"/>
+        <circle cx="420" cy="245" r="16" fill="rgba(0,0,0,.25)" stroke="rgba(255,255,255,.25)" stroke-width="4"/>
+        <circle cx="630" cy="245" r="16" fill="rgba(0,0,0,.25)" stroke="rgba(255,255,255,.25)" stroke-width="4"/>
+        <!-- varillas -->
+        <path d="M420 245h210" stroke="rgba(255,255,255,.25)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M420 245l50-60M630 245l-50-60" stroke="rgba(255,255,255,.18)" stroke-width="6" stroke-linecap="round"/>
+        <!-- enganche -->
+        <path d="M330 210h-90" stroke="url(#gold)" stroke-width="10" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="top">
+      <div class="cinta">Tema Cenicienta</div>
+      <h1 class="titulo">Mis XV Años</h1>
+      <p class="sub">“Mi cuento de hadas empieza aquí…”</p>
+      <div class="divider"></div>
+      <div class="nombre">Angélica Rodríguez Escobedo</div>
+      <div class="quince">Te invita con mucha ilusión a celebrar sus <span class="resaltado">15 años</span></div>
+      <p class="sub" style="margin-top:10px; font-style:italic; opacity:.92;">
+        “Acompáñame a vivir este día tan especial lleno de magia, sueños y alegría.”
+      </p>
+    </div>
+
+    <div class="content">
+      <div class="btnrow">
+        <button class="btn-music" onclick="toggleMusic()">🎵 Música</button>
+        <button class="btn-next" onclick="nextScene()">▶ Ver invitación</button>
+      </div>
+      <div class="small">Tip: toca “Ver invitación” para avanzar como video ✨</div>
+    </div>
+
+    <div class="progress" id="progress"></div>
+  </div>
+</section>
+
+<!-- ESCENA 2 -->
+<section class="scene" data-scene="1">
+  <div class="card">
+    <div class="top">
+      <div class="cinta">Detalles del evento</div>
+      <h1 class="titulo" style="font-size:58px;">Fecha & Hora</h1>
+      <p class="sub">Reserva esta noche especial ✨</p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="content">
+      <div class="box">
+        <div class="label">Cuándo</div>
+        <p class="texto"><strong>14 de marzo</strong> • <strong>8:00 p.m.</strong></p>
+      </div>
+
+      <div class="box">
+        <div class="label">Dónde</div>
+        <p class="texto">
+          Mz X Prima Lt 10 – Villa Huanchaco<br>
+          <span style="opacity:.9">Referencia:</span> A 2 cuadras de la posta médica de Manuel Arévalo
+        </p>
+        <div class="btnrow">
+          <a class="btn btn-map" target="_blank" href="https://maps.google.com/?q=-8.075103,-79.066162">
+            📍 Abrir ubicación
+          </a>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn-back" onclick="prevScene()">◀ Atrás</button>
+        <button class="btn-next" onclick="nextScene()">Siguiente ▶</button>
+      </div>
+    </div>
+
+    <div class="progress" id="progress2"></div>
+  </div>
+</section>
+
+<!-- ESCENA 3 -->
+<section class="scene" data-scene="2">
+  <div class="card">
+    <div class="top">
+      <div class="cinta">Familia</div>
+      <h1 class="titulo" style="font-size:58px;">Acompañan</h1>
+      <p class="sub">Con amor y bendición 💙</p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="content">
+      <div class="box">
+        <div class="label">Padres</div>
+        <p class="texto">
+          Yosver Rodríguez Rodríguez<br>
+          Jenny Escobedo Álvarez
+        </p>
+      </div>
+
+      <div class="box">
+        <div class="label">Padrinos</div>
+        <p class="texto">
+          Jhon Moreno Hurtado<br>
+          Sharmin Rivas Eguizabal<br>
+          Raúl Valle Pérez<br>
+          Roxana Guerrero Narró
+        </p>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn-back" onclick="prevScene()">◀ Atrás</button>
+        <button class="btn-next" onclick="nextScene()">Siguiente ▶</button>
+      </div>
+    </div>
+
+    <div class="progress" id="progress3"></div>
+  </div>
+</section>
+
+<!-- ESCENA 4 (Dress code + Yape + Confirmación) -->
+<section class="scene" data-scene="3">
+  <div class="card">
+    <div class="top">
+      <div class="cinta">Confirmación</div>
+      <h1 class="titulo" style="font-size:58px;">Te espero</h1>
+      <p class="sub">Un toque final de magia ✨</p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="content">
+      <div class="box">
+        <div class="label">Código de vestimenta</div>
+        <p class="texto">
+          <strong>Sport Elegante</strong><br><br>
+          💙 El color <strong>CELESTE</strong> es exclusivo para la quinceañera.<br>
+          Todos los demás colores están disponibles.
+        </p>
+      </div>
+
+      <div class="box">
+        <div class="label">Confirmar asistencia</div>
+        <p class="texto" style="margin-bottom:10px;">Escribe tus datos y se abrirá WhatsApp con el mensaje listo ✅</p>
+
+        <div class="form">
+          <input id="inNombre" placeholder="Tu nombre" />
+          <input id="inNumero" placeholder="Tu número (ej: 999999999)" inputmode="numeric" />
+        </div>
+
+        <div class="btnrow">
+          <button class="btn-wsp" onclick="confirmarWsp()">✅ Confirmar por WhatsApp</button>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn-yape" onclick="copiarYape()">💫 Copiar Yape: +51 958735157</button>
+        </div>
+
+        <div class="small">Tu presencia será el mejor regalo ✨</div>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn-back" onclick="prevScene()">◀ Atrás</button>
+        <button class="btn-next" onclick="restart()">🔁 Ver de nuevo</button>
+      </div>
+    </div>
+
+    <div class="progress" id="progress4"></div>
+  </div>
+</section>
+
+<div class="toast" id="toast">Listo ✨</div>
+
+<!-- Música (opcional real) -->
+<audio id="bgm" loop>
+  <!-- Si quieres música real: descomenta y coloca tu mp3 -->
+  <!-- <source src="musica-vals.mp3" type="audio/mpeg"> -->
+</audio>
+
+<script>
+/* ========= Video navigation ========= */
+const scenes = [...document.querySelectorAll(".scene")];
+let idx = 0;
+
+function showScene(i){
+  idx = Math.max(0, Math.min(scenes.length-1, i));
+  scenes.forEach((s,k)=> s.classList.toggle("active", k===idx));
+  renderDots();
+}
+function nextScene(){ showScene(idx+1); }
+function prevScene(){ showScene(idx-1); }
+function restart(){ showScene(0); }
+
+/* dots */
+function renderDots(){
+  const containers = ["progress","progress2","progress3","progress4"]
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+
+  containers.forEach(c=>{
+    c.innerHTML = "";
+    for(let i=0;i<scenes.length;i++){
+      const d = document.createElement("div");
+      d.className = "dot" + (i===idx ? " on":"");
+      c.appendChild(d);
+    }
+  });
+}
+renderDots();
+
+/* ========= Toast ========= */
+function showToast(text){
+  const t = document.getElementById("toast");
+  t.textContent = text;
+  t.classList.add("show");
+  setTimeout(()=> t.classList.remove("show"), 1600);
+}
+
+/* ========= Yape ========= */
+function copiarYape(){
+  navigator.clipboard.writeText("+51958735157");
+  showToast("Número de Yape copiado 💙");
+}
+
+/* ========= Confirmación con formulario ========= */
+const telWsp = "51958735157"; // receptor (WhatsApp)
+function confirmarWsp(){
+  const nombre = (document.getElementById("inNombre").value || "").trim();
+  const numero = (document.getElementById("inNumero").value || "").trim();
+
+  if(!nombre || !numero){
+    showToast("Completa tu nombre y número ✍️");
+    return;
+  }
+
+  const msg = encodeURIComponent(
+`¡Hola! Soy ${nombre} (📞 ${numero}). Confirmo mi asistencia a los XV Años de Angélica Rodríguez Escobedo 🎀✨
+
+📅 14 de marzo
+🕗 8:00 p.m.
+📍 Mz X Prima Lt 10 – Villa Huanchaco
+
+¡Gracias por la invitación!`
+  );
+
+  window.open(`https://wa.me/${telWsp}?text=${msg}`, "_blank");
+}
+
+/* ========= Música ========= */
+/* IMPORTANTE: por políticas del navegador, la música solo inicia con clic */
+function toggleMusic(){
+  const a = document.getElementById("bgm");
+
+  // Si no hay source, aviso
+  if(!a.querySelector("source")){
+    showToast("Para música real: agrega un MP3 en el código 🎵");
+    return;
+  }
+
+  if(a.paused){
+    a.play().then(()=> showToast("Música activada 🎵")).catch(()=> showToast("Toca otra vez para activar 🎵"));
+  }else{
+    a.pause();
+    showToast("Música pausada ⏸️");
+  }
+}
+
+/* ========= Estrellas animadas ========= */
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+let w,h,stars;
+
+function resize(){
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+  stars = Array.from({length: Math.floor((w*h)/18000)}, () => ({
+    x: Math.random()*w,
+    y: Math.random()*h,
+    r: Math.random()*1.6 + 0.4,
+    a: Math.random()*0.8 + 0.2,
+    s: Math.random()*0.35 + 0.05
+  }));
+}
+window.addEventListener("resize", resize);
+resize();
+
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  for(const st of stars){
+    st.a += (Math.random()-0.5)*0.03;
+    st.a = Math.min(1, Math.max(0.15, st.a));
+    st.y += st.s;
+    if(st.y>h+10){ st.y=-10; st.x=Math.random()*w; }
+    ctx.beginPath();
+    ctx.arc(st.x, st.y, st.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${st.a})`;
+    ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>
